@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Buscador de Registros Musicala - Acudientes</title>
+  <style>
+    :root{
+      --brand:#3949AB;
+      --brand-2:#5C6BC0;
+      --bg:#F4F4F4;
+      --text:#333;
+      --radius:12px;
+      --shadow:0 10px 28px rgba(0,0,0,.08);
+    }
+
+    /* Layout para empujar el footer al fondo */
+    html, body { height: 100%; }
+    body {
+      display: flex;
+      flex-direction: column;
+      font-family: 'Roboto', Arial, sans-serif;
+      background-color: var(--bg);
+      margin: 0;
+      color: var(--text);
+    }
+
+    .header {
+      background: var(--brand);
+      color: white;
+      text-align: center;
+      padding: 20px;
+      transition: opacity 1s ease-out;
+    }
+    .header h1 { margin: 0; }
+
+    /* ====== CONTENEDOR RESPONSIVO (imagen + buscador) ====== */
+    .search-container{
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 1;
+      transition: opacity 1s ease-out;
+
+      display: grid;
+      grid-template-columns: auto 1fr; /* imagen | buscador */
+      align-items: center;
+      gap: 24px;
+      width: min(92%, 1100px);
+      padding: 12px;
+    }
+
+    .encabezado-img{
+      height: clamp(120px, 20vw, 320px);
+      width: auto;
+      display: block;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      object-fit: cover;
+    }
+
+    .search-box{
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+    .search-box input{
+      flex: 1;
+      min-width: 220px;
+      padding: 14px 16px;
+      font-size: clamp(14px, 1.1vw, 16px);
+      border: 1px solid #DDD;
+      border-radius: var(--radius);
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(0,0,0,.05) inset;
+    }
+    .search-box button{
+      padding: 14px 18px;
+      font-size: clamp(14px, 1.05vw, 16px);
+      background-color: var(--brand-2);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      box-shadow: var(--shadow);
+      white-space: nowrap;
+    }
+    .search-box button:hover{ background: var(--brand); }
+
+    /* --------- Responsive mobile --------- */
+    @media (max-width: 720px){
+      .search-container{
+        grid-template-columns: 1fr;       /* apilado */
+        justify-items: center;
+        text-align: center;
+        gap: 18px;
+      }
+      .search-box{
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .search-box button{ width: 100%; }
+      .encabezado-img{ height: clamp(130px, 24vw, 240px); }
+    }
+
+    /* Contenedor de resultados */
+    .container {
+      max-width: 1100px;
+      margin: 0 auto 40px;
+      padding: 20px;
+      background: white;
+      box-shadow: 0 20px 50px rgba(0,0,0,.06);
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    /* Título del estudiante mejorado */
+    .student-title{
+      font-size: clamp(26px, 3vw, 44px);
+      font-weight: 900;
+      letter-spacing: .3px;
+      color: #3f51b5;
+      text-align: center;
+      margin: 6px 0 18px;
+      text-shadow: 0 2px 12px rgba(63,81,181,.15);
+    }
+
+    /* Tarjetica de acciones (botones) */
+    .actions{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap: 16px;
+      padding: 18px 22px;
+      margin: 0 auto 18px;
+      width: min(92%, 680px);
+      border-radius: 16px;
+      background: radial-gradient(120% 140% at 10% 0%, #f1f3ff 0%, #ffffff 60%);
+      box-shadow: 0 12px 32px rgba(63,81,181,.12);
+    }
+
+    /* Botones con gradiente y micro-animación */
+    .boton{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      padding: 12px 22px;
+      border-radius: 12px;
+      font-weight: 700;
+      letter-spacing:.2px;
+      background: linear-gradient(135deg, #5C6BC0 0%, #3F51B5 100%);
+      color:#fff;
+      border:none;
+      box-shadow: 0 8px 18px rgba(63,81,181,.25);
+      transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+      text-decoration: none;
+    }
+    .boton:hover{
+      transform: translateY(-2px);
+      box-shadow: 0 12px 26px rgba(63,81,181,.35);
+      filter: brightness(1.03);
+    }
+    .boton:active{
+      transform: translateY(0);
+      box-shadow: 0 6px 14px rgba(63,81,181,.35);
+    }
+    .boton:nth-of-type(2){ background: linear-gradient(135deg, #7C4DFF, #5E35B1); }
+    .boton:nth-of-type(3){ background: linear-gradient(135deg, #00BCD4, #0288D1); }
+    .boton:focus-visible{
+      outline: 3px solid rgba(63,81,181,.45);
+      outline-offset: 3px;
+    }
+
+    .no-registro { color: #C62828; font-size: 18px; }
+
+    /* Aviso de error bonito */
+    .alert {
+      color: #C62828;
+      background: #FDECEA;
+      border: 1px solid #F5C2C7;
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin: 12px auto;
+      width: min(92%, 600px);
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+
+    .footer {
+      margin-top: auto;         /* empuja al fondo */
+      text-align: center;
+      font-size: 14px;
+      color: #777;
+      padding: 12px 0 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="header" id="header">
+    <h1>🎵 Buscador de Registros Musicala - Acudientes</h1>
+  </div>
+
+  <!-- IZQ: imagen | DER: buscador -->
+  <div class="search-container" id="search-container">
+    <img
+      src="./Encabezado_Musicala.png?v=3"
+      alt="Encabezado Musicala"
+      class="encabezado-img"
+    >
+    <div class="search-box">
+      <input id="filtroDocumento" placeholder="🔍 Ingrese el número de documento...">
+      <button onclick="mostrarRegistro()">🔎 Buscar Registro</button>
+    </div>
+  </div>
+
+  <div class="container" id="content"></div>
+
+  <div class="footer">
+    © Buscador de Registros Musicala 2025. Todos los derechos reservados.
+  </div>
+
+  <script>
+    const sheetURL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQQO-CBQoN1QZ4GFExJWmPz6YNLO6rhaIsWBv-Whlu9okpZRpcxfUtLYeAMKaiNOQJrrf3Vcwhk32kZ/pub?gid=2130299316&single=true&output=tsv";
+
+    let datos = [];
+
+    async function cargarDatos() {
+      try {
+        const response = await fetch(sheetURL);
+        const tsv = await response.text();
+        const filas = tsv.trim().split('\n').map(row => row.split('\t'));
+
+        // saltamos encabezados y filas vacías
+        datos = filas.filter((fila, index) => index > 1 && fila[0] && fila[0].toLowerCase() !== "estudiantes");
+
+        // Activos primero
+        datos.sort((a, b) => {
+          const A = (a[1] || "").toLowerCase();
+          const B = (b[1] || "").toLowerCase();
+          if (A === "activo" && B !== "activo") return -1;
+          if (B === "activo" && A !== "activo") return 1;
+          return 0;
+        });
+
+      } catch (error) { console.error("Error:", error); }
+    }
+
+    function mostrarRegistro() {
+      const documento = document.getElementById("filtroDocumento").value.trim();
+      const content = document.getElementById("content");
+
+      if (!documento) {
+        content.innerHTML = "<div class='alert'>⚠️ Por favor, ingresa un número de documento.</div>";
+        document.getElementById("filtroDocumento").focus();
+        return;
+      }
+
+      // Buscar antes de ocultar nada
+      const registroEncontrado = datos.filter(fila => fila[2] && fila[2].trim() === documento); // Col C: Documento
+
+      if (registroEncontrado.length === 0) {
+        // Mantener visible el buscador y mostrar mensaje
+        content.innerHTML = "<div class='alert'>❌ No se encontró un registro con ese número de documento. Inténtalo nuevamente.</div>";
+        const input = document.getElementById("filtroDocumento");
+        input.focus();
+        input.select();
+        return;
+      }
+
+      // Solo si SÍ hay resultado: ocultar encabezado y buscador
+      const header = document.getElementById("header");
+      const searchContainer = document.getElementById("search-container");
+      header.style.opacity = '0';
+      searchContainer.style.opacity = '0';
+      setTimeout(() => {
+        header.style.display = 'none';
+        searchContainer.style.display = 'none';
+      }, 1000);
+
+      // Render de los enlaces
+      const f = registroEncontrado[0];
+      const nombre = f[0] || "";
+      const apURL = f[40] || "", apTexto = f[41] || "";
+      const asURL = f[43] || "", asTexto = f[44] || "";
+      const avURL = f[46] || "", avTexto = f[47] || "";
+
+      let html = `<div class="student-title">${nombre}</div><div class="actions">`;
+      if (esURLValida(apURL)) html += `<a class="boton" href="${apURL}" target="_blank" rel="noopener noreferrer">${apTexto}</a>`;
+      if (esURLValida(asURL)) html += `<a class="boton" href="${asURL}" target="_blank" rel="noopener noreferrer">${asTexto}</a>`;
+      if (esURLValida(avURL)) html += `<a class="boton" href="${avURL}" target="_blank" rel="noopener noreferrer">${avTexto}</a>`;
+      html += `</div>`;
+
+      if (html === `<div class="student-title">${nombre}</div><div class="actions"></div>`) {
+        html = `<div class="student-title">${nombre}</div><div class='alert'>❌ No hay registros disponibles.</div>`;
+      }
+
+      content.innerHTML = html;
+    }
+
+    const esURLValida = v => typeof v === "string" && v.startsWith("http");
+
+    // Cargar datos y limpiar alertas al escribir
+    window.addEventListener('load', () => {
+      cargarDatos();
+      const input = document.getElementById('filtroDocumento');
+      input.addEventListener('input', () => {
+        const content = document.getElementById('content');
+        if (content && content.querySelector('.alert')) content.innerHTML = '';
+      });
+    });
+  </script>
+</body>
+</html>
